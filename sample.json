@@ -1,0 +1,129 @@
+{
+    "name": "SAURAV KANEGAONKAR",
+    "phone_no": "+918850422265",
+    "email": "saurav.kanegaonkar@gmail.com",
+    "links": {
+        "github": null,
+        "linkedin": null
+    },
+    "skills": [
+        "System",
+        "Js",
+        "Github",
+        "Sql",
+        "Php",
+        "Javascript",
+        "C++",
+        "Mysql",
+        "Css",
+        "Coding",
+        "Node js",
+        "Engineering",
+        "Html",
+        "Marketing",
+        "Email",
+        "Database",
+        "Python",
+        "Algorithms"
+    ],
+    "education": [
+        "BTech",
+        [
+            "HSC",
+            "2016"
+        ],
+        "ICSE"
+    ],
+    "experience": [
+        " May"
+    ],
+    "entities": {
+        "experience": [
+            "May 2021 \u2013 July 2021",
+            "Summer Analyst, Samsung R&D Institute Bangalore",
+            "\u2022  Worked on the Bixby Smart Home Service of the IoT team",
+            "\u2022  Designed algorithms for identifying the target device/s from user request",
+            "and assigning action to the corresponding devices",
+            "saurav.kanegaonkar@gmail.com",
+            "LinkedIn Profile",
+            "GitHub Profile"
+        ],
+        "projects": [],
+        "skills": [
+            "\u2022  C++",
+            "\u2022  Python",
+            "\u2022  SQL",
+            "\u2022  HTML",
+            "\u2022  CSS",
+            "\u2022",
+            "\u2022  Node JS",
+            "JavaScript",
+            "RESPONSIBILITIES",
+            "\u2022  Chief Theatrical Manager,",
+            "Pratibimb, VJTI",
+            "-> Organised Mumbai's Got",
+            "Talent wherein co-",
+            "ordinated with teams, from",
+            "all across the city",
+            "participated to showcase",
+            "their unique talents",
+            "-> Volunteered in",
+            "conducting workshops to",
+            "teach coding to students of",
+            "VJTI",
+            "Technovanza, VJTI",
+            "-> Handled the",
+            "responsibility of contacting",
+            "and convincing HR and",
+            "marketing executives of",
+            "various companies to",
+            "collaborate with",
+            "Technovanza",
+            "\u2022 Music Recommendation Using Facial Expressions",
+            "(April\u201921)",
+            "\u27a2 Developed an application which detects facial emotions in real time",
+            "using webcam feed & displays playlist of songs according to the mood of",
+            "the user",
+            "\u27a2 Used Haar-Cascades for Face detection and CNN model for the mood",
+            "detection",
+            "by ANN",
+            "and Angry",
+            "\u2022 Song Emotion Detection",
+            "(March\u201921)",
+            "\u27a2 Made an application which uses librosa library to detect song emotions",
+            "\u27a2 Focused on 6 song emotions - Excited, Happy, Peaceful, Depressed, Sad",
+            "\u2022 Intelligent Tourism",
+            "(October\u201920 \u2013 December\u201920)",
+            "\u27a2 Developed a web application which plans a tour for the user",
+            "\u27a2 Displays efficient route of travelling",
+            "\u27a2 Used PHP, Laravel and MySQL technology as framework and database",
+            "\u2022 Airplane Management System",
+            "(May\u201920 \u2013 July\u201920)",
+            "\u27a2 Created a web application showing the recent flights available of each",
+            "\u2022  Core Member, CoC, VJTI",
+            "\u27a2 Used Node JS, Express and MySQL technology as framework and",
+            "airline and booking",
+            "database",
+            "\u2022 Movie Recommender App",
+            "(September\u201919- December\u201919)",
+            "\u27a2 Developed an app that recommends user list of movies according to",
+            "user\u2019s selected genres",
+            "\u2022  Chief Relations Executive,",
+            "\u27a2 Recommender System in Machine Learning"
+        ],
+        "education": [
+            "Score: 92.2%",
+            "\u2022",
+            "I.C.S.E 10th Examination",
+            "(2012 \u2013 2016)"
+        ]
+    },
+    "competencies": {
+        "teamwork": [
+            "team"
+        ],
+        "leadership": [
+            "teach"
+        ]
+    }
+}
