@@ -16,58 +16,18 @@ from pdfminer.pdfinterp import PDFPageInterpreter
 from pdfminer.pdfinterp import PDFResourceManager
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
+from nltk.tag.stanford import StanfordNERTagger
+from nltk import pos_tag
+from nltk.chunk import conlltags2tree
+import pdfplumber
+
+PATH_TO_JAR='C:/Users/ASUS/Downloads/stanford-ner-4.2.0/stanford-ner-2020-11-17/stanford-ner.jar'
+PATH_TO_MODEL = 'C:/Users/ASUS/Downloads/stanford-ner-4.2.0/stanford-ner-2020-11-17/classifiers/english.all.3class.distsim.crf.ser.gz'
+tagger = StanfordNERTagger(model_filename=PATH_TO_MODEL,path_to_jar=PATH_TO_JAR, encoding='utf-8')
 
 # load pre-trained model
 nlp = spacy.load('en_core_web_sm')
 
-# Education (Upper Case Mandatory)
-EDUCATION         = [
-                    'BE','B.E.', 'B.E', 'BS', 'B.S', 'ME', 'M.E', 'M.E.', 'MS', 'M.S', 'BTECH', 'MTECH',
-                    'SSC', 'HSC', 'CBSE', 'ICSE', 'B-TECH', 'Bachelor of Science', 'Bachelor of Technology'
-                    ]
-
-NOT_ALPHA_NUMERIC = r'[^a-zA-Z\d]'
-
-NUMBER            = r'\d+'
-
-# For finding date ranges
-MONTHS_SHORT      = r'(jan)|(feb)|(mar)|(apr)|(may)|(jun)|(jul)|(aug)|(sep)|(oct)|(nov)|(dec)'
-MONTHS_LONG       = r'(january)|(february)|(march)|(april)|(may)|(june)|(july)|(august)|(september)|(october)|(november)|(december)'
-MONTH             = r'(' + MONTHS_SHORT + r'|' + MONTHS_LONG + r')'
-YEAR              = r'(((20|19)(\d{2})))'
-
-STOPWORDS         = set(stopwords.words('english'))
-
-RESUME_SECTIONS = [
-                    'accomplishments',
-                    'experience',
-                    'education',
-                    'interests',
-                    'projects',
-                    'professional experience',
-                    'publications',
-                    'skills',
-                    'activities'
-                ]
-
-RESERVED_WORDS = [
-    'school',
-    'college',
-    'univers',
-    'academy',
-    'faculty',
-    'institute',
-    'faculdades',
-    'Schola',
-    'schule',
-    'lise',
-    'lyceum',
-    'lycee',
-    'polytechnic',
-    'kolej',
-    'ünivers',
-    'okul',
-]
 # initialize matcher with a vocab
 matcher = Matcher(nlp.vocab)
 
@@ -119,6 +79,13 @@ def extract_text(file_path, extension):
     elif extension == '.docx' or extension == '.doc':
         text = extract_text_from_doc(file_path)
     return text
+
+def extract_text1(file_path):
+    with pdfplumber.open(file_path) as pdf:
+        page = pdf.pages[0]
+        resume_text = page.extract_text()
+
+    return resume_text
 
 def extract_name(resume_text):
     nlp_text = nlp(resume_text)
@@ -257,19 +224,18 @@ def extract_education(resume_text):
     for index, text in enumerate(nlp_text):
         for tex in text.split():
             tex = re.sub(r'[?|$|.|!|,|(|)]', r'', tex)
-            if tex.upper() in EDUCATION and tex not in STOPWORDS:
+            if tex.upper() in cs.EDUCATION and tex not in cs.STOPWORDS:
                     edu[tex] = text + nlp_text[index]
 
     # Extract year
     education = []
     for key in edu.keys():
-        year = re.search(re.compile(YEAR), edu[key])
+        year = re.search(re.compile(cs.YEAR), edu[key])
         if year:
             education.append((key, ''.join(year.group(0))))
         else:
             education.append(key)
     return education
-
 
 def extract_entity_sections(text):
     '''
@@ -286,12 +252,12 @@ def extract_entity_sections(text):
         if len(phrase) == 1:
             p_key = phrase
         else:
-            p_key = set(phrase.lower().split()) & set(RESUME_SECTIONS)
+            p_key = set(phrase.lower().split()) & set(cs.RESUME_SECTIONS)
         try:
             p_key = list(p_key)[0]
         except IndexError:
             pass
-        if p_key in RESUME_SECTIONS:
+        if p_key in cs.RESUME_SECTIONS:
             entities[p_key] = []
             key = p_key
         elif key and phrase.strip():
@@ -337,14 +303,14 @@ def extract_experience(resume_text):
 
     # parse regex
     cp = nltk.RegexpParser('P: {<NNP>+}')
-    cs = cp.parse(sent)
+    cs1 = cp.parse(sent)
 
     # for i in cs.subtrees(filter=lambda x: x.label() == 'P'):
     #     print(i)
 
     test = []
 
-    for vp in list(cs.subtrees(filter=lambda x: x.label() == 'P')):
+    for vp in list(cs1.subtrees(filter=lambda x: x.label() == 'P')):
         test.append(" ".join([i[0] for i in vp.leaves() if len(vp.leaves()) >= 2]))
 
     # Search the word 'experience' in the chunk and then print out the text after it
@@ -371,29 +337,68 @@ def extract_competencies(text):
 
     return competency_dict
 
+def stanfordNE2BIO(tagged_sent):
+    bio_tagged_sent = []
+    prev_tag = "O"
+    for token, tag in tagged_sent:
+        if tag == "O": #O
+            bio_tagged_sent.append((token, tag))
+            prev_tag = tag
+            continue
+        if tag != "O" and prev_tag == "O": # Begin NE
+            bio_tagged_sent.append((token, "B-"+tag))
+            prev_tag = tag
+        elif prev_tag != "O" and prev_tag == tag: # Inside NE
+            bio_tagged_sent.append((token, "I-"+tag))
+            prev_tag = tag
+        elif prev_tag != "O" and prev_tag != tag: # Adjacent NE
+            bio_tagged_sent.append((token, "B-"+tag))
+            prev_tag = tag
 
-def extract_measurable_results(text, experience_list):
-    '''
-    Helper function to extract measurable results from resume text
+    return bio_tagged_sent
 
-    :param resume_text: Plain resume text
-    :return: dictionary of measurable results
-    '''
+def stanfordNE2tree(ne_tagged_sent):
+    bio_tagged_sent = stanfordNE2BIO(ne_tagged_sent)
+    sent_tokens, sent_ne_tags = zip(*bio_tagged_sent)
+    sent_pos_tags = [pos for token, pos in pos_tag(sent_tokens)]
 
-    # we scan for measurable results only in first half of each sentence
-    experience_text = ' '.join([text[:len(text) // 2 - 1] for text in experience_list])
-    mr_dict = {}
+    sent_conlltags = [(token, pos, ne) for token, pos, ne in zip(sent_tokens, sent_pos_tags, sent_ne_tags)]
+    ne_tree = conlltags2tree(sent_conlltags)
+    return ne_tree
 
-    for mr in cs.MEASURABLE_RESULTS.keys():
-        for item in cs.MEASURABLE_RESULTS[mr]:
-            if string_found(item, experience_text):
-                if mr not in mr_dict.keys():
-                    mr_dict[mr] = [item]
-                else:
-                    mr_dict[mr].append(item)
+def stanfordNER(resume_text):
+    words = nltk.word_tokenize(resume_text)
+    ne_tagged_sent = tagger.tag(words)
+    ne_tree = stanfordNE2tree(ne_tagged_sent)
 
-    return mr_dict
+    ne_in_sent = []
+    for subtree in ne_tree:
+        if type(subtree) == Tree:  # If subtree is a noun chunk, i.e. NE != "O"
+            ne_label = subtree.label()
+            ne_string = " ".join([token for token, pos in subtree.leaves()])
+            ne_in_sent.append((ne_string, ne_label))
 
+    # print(ne_in_sent)
+    return ne_in_sent
+
+def stanfordNER_name(resume_text):
+
+    ne_in_sent = stanfordNER(resume_text)
+    for word in ne_in_sent:
+        if (word[1] == 'PERSON'):
+            name = word[0]
+            break
+    return name
+
+
+def stanfordNER_college(resume_text):
+    ne_in_sent = stanfordNER(resume_text)
+    college = []
+    for word in ne_in_sent:
+        if (word[1] == 'ORGANIZATION'):
+            college.append(word[0])
+
+    return college
 
 def string_found(string1, string2):
     if re.search(r"\b" + re.escape(string1) + r"\b", string2):
